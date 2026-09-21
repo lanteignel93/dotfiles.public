@@ -297,6 +297,18 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+# wt — one worktree per topic across projects (~/dotclaude/.claude/bin/wt, on PATH
+# via ~/.local/bin; layout in ~/dotclaude/practices/vm-workspace.md). A script
+# cannot cd its parent shell, so `wt cd <query>` is the one subcommand handled
+# here: `wt path` prints the worktree (fzf when the query is ambiguous).
+wt() {
+    if [[ "$1" == cd ]]; then
+        local d
+        d="$(command wt path "${@:2}")" && cd "$d"
+    else
+        command wt "$@"
+    fi
+}
 
 # Claude Code: auto-greet on bare launch
 # CLAUDE_CODE_TMUX_TRUECOLOR because Claude Code hard-clamps colour to level 2
