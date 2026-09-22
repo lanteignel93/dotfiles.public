@@ -297,18 +297,14 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-# wt — one worktree per topic across projects (~/dotclaude/.claude/bin/wt, on PATH
-# via ~/.local/bin; layout in ~/dotclaude/practices/vm-workspace.md). A script
-# cannot cd its parent shell, so `wt cd <query>` is the one subcommand handled
-# here: `wt path` prints the worktree (fzf when the query is ambiguous).
-wt() {
-    if [[ "$1" == cd ]]; then
-        local d
-        d="$(command wt path "${@:2}")" && cd "$d"
-    else
-        command wt "$@"
-    fi
-}
+# The spacecowboy fleet's shell surface: the wt/sc/arm shell functions and
+# the completion wiring, all of it in one idempotent file that ships WITH the
+# tools (dotclaude .claude/shell/fleet.zsh, linked here by
+# deploy/setup-server.sh). One line, so a new fleet member never needs a
+# second commit in this repo again — which is what stranded `sc` on a single
+# box on 2026-09-21. `arm` re-sources it to re-arm a running shell.
+# Must come after compinit above: compdef needs the completion system up.
+[ -r ~/.claude/shell/fleet.zsh ] && . ~/.claude/shell/fleet.zsh
 
 # Claude Code: auto-greet on bare launch
 # CLAUDE_CODE_TMUX_TRUECOLOR because Claude Code hard-clamps colour to level 2
