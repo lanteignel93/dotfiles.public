@@ -51,7 +51,7 @@ return {
 
                     -- LSP Diagnostics
                     error = "#dea6a0",
-                    warning = "#d6efd8",
+                    warning = "#ffffba",   -- was #d6efd8, a pale mint: warnings read as success. Butter matches the gutter and the Claude theme.
                     hint = "#bedc74",
                     info = "#7fa1c3",
 
