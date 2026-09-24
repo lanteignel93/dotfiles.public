@@ -8,6 +8,15 @@ return {
     bigfile = { enabled = true },
     dashboard = { enabled = true },
     explorer = { enabled = false },
+    -- Inline plots for molten (plugins/jupyter.lua). molten creates the image
+    -- placements itself; `enabled` is still needed because setup is what wires
+    -- the cleanup (delete the terminal's copy of a plot on BufWipeout / exit).
+    -- doc.enabled = false: don't auto-render image links in markdown notes.
+    -- molten reads doc.max_width / doc.max_height (cells) as the plot size.
+    image = {
+      enabled = true,
+      doc = { enabled = false, max_width = 100, max_height = 30 },
+    },
     indent = { enabled = true },
     input = { enabled = true },
     notifier = {

@@ -19,7 +19,7 @@
 local parsers = {
   'bash', 'c', 'cmake', 'cpp', 'csv', 'css', 'cuda', 'dockerfile', 'doxygen',
   'git_config', 'gitignore', 'go', 'graphql', 'groovy', 'html', 'ini', 'java',
-  'javascript', 'json', 'lua', 'make', 'markdown', 'markdown_inline', 'python',
+  'javascript', 'json', 'latex', 'lua', 'make', 'markdown', 'markdown_inline', 'python',
   'r', 'regex', 'sql', 'ssh_config', 'terraform', 'toml', 'tsx', 'typescript',
   'vim', 'vimdoc', 'yaml',
 }

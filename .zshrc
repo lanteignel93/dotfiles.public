@@ -191,6 +191,28 @@ alias leet="nvim leetcode.nvim"
 alias countlnpy='find -type f -name "*.py" | xargs wc -l'
 alias mute='amixer -D pulse sset Master mute'
 alias unmute='amixer -D pulse sset Master unmute'
+
+# Wipe every image kitty is holding. Needed because kitty graphics live outside
+# tmux's model of the screen: tmux never repaints those pixels and kitty never
+# sees the pane leave the alt screen, so a plot orphaned by an nvim crash, a
+# tmux window switch, or an image.nvim that failed setup just stays there.
+# image.nvim only deletes what it is still tracking (VimLeavePre -> clear()).
+# Inside tmux the delete has to be wrapped in a passthrough DCS, which is a
+# no-op unless allow-passthrough is on -- so check, rather than spray a raw
+# escape at a server that will render it as garbage.
+clearimg() {
+    local seq=$'\e_Ga=d,d=A\e\\'
+    if [[ -n "$TMUX" ]]; then
+        local pt
+        pt=$(tmux show -Apv allow-passthrough 2>/dev/null)
+        if [[ "$pt" != "on" && "$pt" != "all" ]]; then
+            print -u2 "clearimg: tmux allow-passthrough is '${pt:-unsupported}' (server $(tmux display -p '#{version}')) -- images cannot be cleared through this server"
+            return 1
+        fi
+        seq=$'\ePtmux;\e\e_Ga=d,d=A\e\e\\\e\\'
+    fi
+    printf '%s' "$seq" > /dev/tty
+}
 # bat is `batcat` on Debian/Ubuntu, `bat` on Fedora; a hard alias to a missing
 # binary took `cat` out entirely on a work box.
 if command -v batcat >/dev/null 2>&1; then alias cat='batcat'

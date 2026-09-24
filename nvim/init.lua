@@ -44,6 +44,7 @@ require('lazy').setup({
 	{ import = 'plugins.scooter' },       -- Your new "find and replace" TUI integration
 	-- { import = 'plugins.screensaver' },   -- Screensaver
 	{ import = 'plugins.venv-selector' }, -- Python venv picker
+	{ import = 'plugins.jupyter' },       -- Jupyter notebooks: jupytext + molten (+ inline plots where the terminal allows)
 }, {
 	rocks = { enabled = false },
 	ui = {
