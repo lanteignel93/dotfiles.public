@@ -40,7 +40,7 @@
      would sit on lime or the body sand in spacecowboy. Size and form (HEADINGS
      below) carry the rest. */
   --h1-color: #bdfe58;
-  --h2-color: #5eeeaf;
+  --h2-color: #1bfd9c;
   --h3-color: #ffffba;
   --h4-color: #dea6a0;
   --h5-color: #99ccff;
@@ -132,7 +132,7 @@
      Picked to stay six distinct colours in every palette: spacecowboy has only a
      green and an orange family, so the tonal roles (steel, lav) would repeat sand. */
   --chart-1: #bdfe58;      --chart-1-rgb: 189, 254, 88;
-  --chart-2: #5eeeaf;      --chart-2-rgb: 94, 238, 175;
+  --chart-2: #1bfd9c; --chart-2-rgb: 27, 253, 156;
   --chart-3: #4b8902;  --chart-3-rgb: 75, 137, 2;
   --chart-4: #dea6a0;      --chart-4-rgb: 222, 166, 160;
   --chart-5: #ffffba;    --chart-5-rgb: 255, 255, 186;
