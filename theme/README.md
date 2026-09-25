@@ -21,13 +21,13 @@ dye spacecowboy     flip everything; dye voidrunner flips back
 dye doctor          drift: stray hex in tracked files, stale renders, unpublished repos
 ```
 
-Surfaces that follow the link with no restart: nvim (every live instance), tmux, the zsh prompt and fzf/eza/bat/lazygit/tuicr colours (through `arm -a` or the next prompt), Claude Code (`/theme` in a running session), kitty (remote control on the desktop, OSC to the current window over ssh). Firefox, Obsidian, Slack and Spotify print what to load or paste.
+Surfaces that follow the link with no restart: nvim (every live instance), tmux, the zsh prompt and fzf/eza/bat/lazygit/tuicr colours (through `arm -a` or the next prompt), Claude Code (`/theme` in a running session), kitty (remote control on the desktop, OSC to the current window over ssh). On the desktop a flip also restarts awesome and restores the nitrogen wallpaper (skipped when the desktop is driven remotely), switches Obsidian live in every vault already wearing a dye theme, and re-applies the Spotify scheme through spicetify. Only Firefox's theme add-on and Slack's four colours stay manual; dye prints them.
 
 ## Changing a colour
 
 1. Edit the role in `palettes/<name>.toml`.
 2. `dye render` (renders, checks contrast, and `--install` copies the Claude, bat and tuicr files into their trees).
-3. `bash theme/tests/test_theme.sh`. The voidrunner regressions compare against frozen copies of the files the factory replaced; a deliberate change updates the fixture in the same commit.
+3. `bash theme/tests/test_theme.sh` (kept in the private repo, not exported). The voidrunner regressions compare against frozen copies of the files the factory replaced; a deliberate change updates the fixture in the same commit.
 4. `dye publish --push` to send the nvim plugins to GitHub.
 
 ## Adding a surface
