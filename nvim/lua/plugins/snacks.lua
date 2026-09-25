@@ -13,9 +13,13 @@ return {
     -- the cleanup (delete the terminal's copy of a plot on BufWipeout / exit).
     -- doc.enabled = false: don't auto-render image links in markdown notes.
     -- molten reads doc.max_width / doc.max_height (cells) as the plot size.
+    -- They are CAPS: snacks never upscales, and it also shrinks to the window,
+    -- so splits stay fine. Sized for the 4K desktop (8x18 px cells, nvim panes
+    -- ~340x113): a default kernel plot comes out ~184x58 cells (ipython config), which
+    -- fits under this cap uncropped. 100x30 made plots a fifth of the pane.
     image = {
       enabled = true,
-      doc = { enabled = false, max_width = 100, max_height = 30 },
+      doc = { enabled = false, max_width = 200, max_height = 60 },
     },
     indent = { enabled = true },
     input = { enabled = true },
