@@ -56,7 +56,7 @@ ROLES = [
     "dim", "border", "fg2", "fg", "bright", "ident",
     # accents
     "lime", "limeDeep", "limeSoft", "cursor", "search", "func", "op",
-    "mint", "mintVivid", "mintPale", "str", "lav", "sky", "steel", "teal",
+    "mint", "mintVivid", "mintPale", "str", "lav", "sky", "type", "steel", "teal",
     "rose", "pink", "butter", "lspWarn", "peach", "red",
 ]
 GROUNDS = ["bg1", "bg2", "bg3", "bg4", "lnr"]

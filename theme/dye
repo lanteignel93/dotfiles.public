@@ -6,7 +6,7 @@
 #                          current.json, then tell every live surface to reload;
 #                          --restart execs every shell at a prompt instead of re-sourcing
 #   dye ls                 the themes build/ offers
-#   dye swatch [name]      the 33 roles of a theme (default: the worn one), in colour
+#   dye swatch [name]      the 34 roles of a theme (default: the worn one), in colour
 #   dye doctor             drift and wiring: stray hex in dotfiles, missing include
 #                          lines, stale renders, unpublished repos (exit 1 on a finding)
 #   dye render [args]      python3 render.py "$@" (render, --check, --contrast, --install)

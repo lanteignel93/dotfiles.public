@@ -28,7 +28,8 @@ return {
   mintPale = "#baffc9",   -- git added
   str = "#e5ccff",
   lav = "#e5ccff",          -- elsewhere: visual, remote
-  sky = "#99ccff",          -- types, booleans, insert
+  sky = "#99ccff",          -- booleans, builtins, links, insert
+  type = "#99ccff",        -- types (sky in voidrunner, dust in spacecowboy)
   steel = "#7fa1c3",      -- info, terminal
   teal = "#b2d8d8",        -- constants, numbers
   rose = "#dea6a0",        -- errors, replace

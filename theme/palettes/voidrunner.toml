@@ -39,6 +39,7 @@ mintPale = "#baffc9"   # git added
 str      = "#e5ccff"   # string
 lav      = "#e5ccff"   # elsewhere: VISUAL, remote, forge, A_LAV
 sky      = "#99ccff"   # type, bool, INSERT, permission
+type     = "#99ccff"   # types: the same blue as sky
 steel    = "#7fa1c3"   # LSP info, TERMINAL, IDE, color6
 teal     = "#b2d8d8"   # constant, number, plan mode
 rose     = "#dea6a0"   # LSP error, REPLACE, A_ERR

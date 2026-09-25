@@ -3,7 +3,7 @@
 Two themes, one switch. `palettes/*.toml` is the only place a colour is written by hand; `render.py` turns each palette into every tool's config under `build/<name>/`, and `dye <name>` re-points `~/.config/theme/current` at one bundle and tells every live surface to reload.
 
 ```
-palettes/voidrunner.toml     33 roles, derived overrides, contrast floors   <- the source
+palettes/voidrunner.toml     34 roles, derived overrides, contrast floors   <- the source
 palettes/spacecowboy.toml
 templates/                   one file per surface, {{role}} substitution only
 templates/nvim/              the nvim plugin, rendered once per palette
@@ -36,7 +36,7 @@ Write `templates/<app>.<ext>.tmpl` with `{{role}}` keys (`{{lime}}`, `{{lime.hex
 
 ## Adding a theme
 
-Copy a palette file, change `[meta]` and the 33 roles, render. Contrast classes: text roles 4.5:1 against `bg1`, muted 3.0, comments 2.2, grounds monotonic against `bg0`. A `[floors]` entry waives a role with a reason and is printed as WAIVED. Create `~/src/<name>.nvim/main` with a README and LICENSE, then `dye publish <name>`.
+Copy a palette file, change `[meta]` and the 34 roles, render. Contrast classes: text roles 4.5:1 against `bg1`, muted 3.0, comments 2.2, grounds monotonic against `bg0`. A `[floors]` entry waives a role with a reason and is printed as WAIVED. Create `~/src/<name>.nvim/main` with a README and LICENSE, then `dye publish <name>`.
 
 ## Not rendered
 
