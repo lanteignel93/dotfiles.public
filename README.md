@@ -2,7 +2,7 @@
 
 My Linux desktop: awesome WM and polybar, kitty and alacritty, tmux, zsh, and a Neovim setup built for C++ and Python, in one of two themes that everything switches between together: spacecowboy, the main one, and voidrunner.
 
-![Desktop: tmux with Neovim splits on a C++ order book project](pictures/desktop.png)
+![Desktop: tmux with Neovim splits on a C++ order book project, in spacecowboy](https://raw.githubusercontent.com/lanteignel93/spacecowboy.nvim/main/screenshots/cpp.png)
 
 ## What's here
 
