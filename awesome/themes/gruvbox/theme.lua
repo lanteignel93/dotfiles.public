@@ -148,6 +148,15 @@ theme.awesome_icon = theme_assets.awesome_icon(theme.menu_height, theme.bg_focus
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
 theme.icon_theme = nil
 
+-- Theme bundle overlay: every key in ~/.config/theme/current/awesome.lua wins
+-- over the Gruvbox values above, so the WM follows `dye` like everything else.
+do
+  local ok, t = pcall(dofile, os.getenv("HOME") .. "/.config/theme/current/awesome.lua")
+  if ok and type(t) == "table" then
+    for k, v in pairs(t) do theme[k] = v end
+  end
+end
+
 return theme
 
 -- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80

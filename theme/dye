@@ -1,0 +1,467 @@
+#!/usr/bin/env bash
+# dye — wear one theme everywhere.
+#
+#   dye                    which theme this box wears, and which surfaces are wired
+#   dye <name> [--restart] flip: re-point ~/.config/theme/current, refresh Claude's
+#                          current.json, then tell every live surface to reload;
+#                          --restart execs every shell at a prompt instead of re-sourcing
+#   dye ls                 the themes build/ offers
+#   dye swatch [name]      the 33 roles of a theme (default: the worn one), in colour
+#   dye doctor             drift and wiring: stray hex in dotfiles, missing include
+#                          lines, stale renders, unpublished repos (exit 1 on a finding)
+#   dye render [args]      python3 render.py "$@" (render, --check, --contrast, --install)
+#   dye publish [name] [--push]
+#                          copy build/<name>/nvim into ~/src/<name>.nvim/main and commit
+#   dye install            first run on a box: the links dye relies on, bat cache
+#
+# The source of truth is theme/palettes/*.toml in the dotfiles repo; build/ is the
+# committed render of it. dye never writes into either repo's tracked files: a flip
+# touches the current link (outside the repo), ~/dotclaude/.claude/themes/current.json
+# (gitignored) and ~/.config/gtk-4.0/gtk.css (gitignored).
+set -u
+
+THEME_DIR="${THEME_DIR:-$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)}"
+DOTFILES="${DOTFILES:-$(dirname "$THEME_DIR")}"
+BUILD="$THEME_DIR/build"
+CUR_DIR="$HOME/.config/theme"
+CUR="$CUR_DIR/current"
+# Claude Code themes: the dotclaude tree on a fleet box (its themes dir is what
+# ~/.claude/themes links to), the plain ~/.claude/themes on a personal machine.
+if [[ -n "${THEME_CLAUDE_DIR:-}" ]]; then CLAUDE_THEMES="$THEME_CLAUDE_DIR"
+elif [[ -d "$HOME/dotclaude/.claude/themes" ]]; then CLAUDE_THEMES="$HOME/dotclaude/.claude/themes"
+else CLAUDE_THEMES="$HOME/.claude/themes"; fi
+SRC="${THEME_SRC:-$HOME/src}"
+
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  C_OK=$'\e[38;2;94;238;175m' C_WARN=$'\e[38;2;255;255;186m' C_ERR=$'\e[38;2;222;166;160m'
+  C_DIM=$'\e[38;2;88;88;88m' C_HI=$'\e[38;2;189;254;88m' C_0=$'\e[0m'
+else
+  C_OK='' C_WARN='' C_ERR='' C_DIM='' C_HI='' C_0=''
+fi
+row() { printf '  %s%-10s%s %-12s %s\n' "$C_DIM" "$1" "$C_0" "$2" "${3:-}"; }
+ok()  { row "$1" "${C_OK}ok${C_0}" "${2:-}"; }
+skip(){ row "$1" "${C_DIM}skip${C_0}" "${2:-}"; }
+warn(){ row "$1" "${C_WARN}warn${C_0}" "${2:-}"; }
+fail(){ row "$1" "${C_ERR}FAIL${C_0}" "${2:-}"; FINDINGS=$((FINDINGS+1)); }
+die() { printf '%sdye: %s%s\n' "$C_ERR" "$*" "$C_0" >&2; exit 1; }
+FINDINGS=0
+
+bat_bin() { command -v bat 2>/dev/null || command -v batcat 2>/dev/null || true; }
+current_name() { [[ -r "$CUR/name" ]] && head -n1 "$CUR/name" || echo ""; }
+themes() { ls "$BUILD" 2>/dev/null; }
+have_theme() { [[ -r "$BUILD/$1/name" ]]; }
+
+# --- ls / status ---------------------------------------------------------------------------
+cmd_ls() { themes; }
+
+cmd_status() {
+  local name; name="$(current_name)"
+  if [[ -z "$name" ]]; then
+    printf '%sno theme worn%s (%s missing); run: dye install\n' "$C_WARN" "$C_0" "$CUR"
+    return 1
+  fi
+  printf 'wearing %s%s%s  (%s -> %s)\n' "$C_HI" "$name" "$C_0" "$CUR" "$(readlink -f "$CUR")"
+  printf 'available: %s\n' "$(themes | tr '\n' ' ')"
+  echo
+  wired_report
+  return 0
+}
+
+wired_report() {
+  local f
+  f="$DOTFILES/kitty/kitty.conf";  grep -q 'theme/current/kitty.conf' "$f" 2>/dev/null && ok kitty "include line" || warn kitty "no include line in kitty.conf"
+  f="$DOTFILES/.tmux.conf";        grep -q 'theme/current/tmux.conf' "$f" 2>/dev/null && ok tmux "source-file" || warn tmux "no source-file in .tmux.conf"
+  f="$DOTFILES/.zshrc";            grep -q 'theme/current/shell.zsh' "$f" 2>/dev/null && ok zsh "shell.zsh sourced" || warn zsh ".zshrc does not source shell.zsh"
+  f="$DOTFILES/.p10k.zsh";         grep -q 'THEME_LIME' "$f" 2>/dev/null && ok p10k "reads THEME_*" || warn p10k ".p10k.zsh still carries its own colours"
+  f="$DOTFILES/nvim/lua/plugins/theme.lua"; grep -q 'theme/current/name' "$f" 2>/dev/null && ok nvim "reads current/name" || warn nvim "theme.lua does not read current/name"
+  local bb; bb="$(bat_bin)"
+  if [[ -n "$bb" ]]; then
+    local missing=""; for t in $(themes); do "$bb" --list-themes 2>/dev/null | grep -qx "$t" || missing="$missing $t"; done
+    [[ -z "$missing" ]] && ok bat "cache has every theme" || warn bat "cache missing:$missing (dye install)"
+  else skip bat "not installed"; fi
+  [[ -d "$DOTFILES/tuicr/themes" ]] && { local m=""; for t in $(themes); do [[ -f "$DOTFILES/tuicr/themes/$t.toml" ]] || m="$m $t"; done; [[ -z "$m" ]] && ok tuicr "themes installed" || warn tuicr "missing:$m (dye render --install)"; }
+  f="$HOME/.claude/settings.json"; grep -q '"theme": *"custom:current"' "$f" 2>/dev/null && ok claude "theme = custom:current" || warn claude "set \"theme\": \"custom:current\" in ~/.claude/settings.json (or pick it with /theme)"
+  [[ -f "$CLAUDE_THEMES/current.json" ]] && cmp -s "$CLAUDE_THEMES/current.json" "$CUR/claude.json" && ok claude-json "current.json matches" || warn claude-json "current.json stale or missing"
+  f="$HOME/dotclaude/.claude/bin/lib/sckit.sh"; if [[ -f "$f" ]]; then grep -q 'SC_THEME' "$f" && ok fleet "kit sources current/sckit.sh" || warn fleet "sckit.sh has no SC_THEME hook"; else skip fleet "no dotclaude on this box"; fi
+  f="$HOME/dotclaude/.claude/statusline-command.sh"; [[ -f "$f" ]] && { grep -q 'theme/current/statusline.sh' "$f" && ok statusline "sources current/" || warn statusline "hardcoded colours"; }
+  f="$HOME/dotclaude/.claude/shell/fleet.zsh"; [[ -f "$f" ]] && { grep -q 'theme/current/shell.zsh' "$f" && ok arm "fleet.zsh re-themes shells" || warn arm "fleet.zsh does not source shell.zsh"; }
+  return 0
+}
+
+cmd_swatch() {
+  local name="${1:-$(current_name)}"; [[ -n "$name" ]] || name=voidrunner
+  have_theme "$name" || die "no such theme: $name"
+  local f="$THEME_DIR/palettes/$name.toml" k v r g b
+  printf '%s%s%s\n' "$C_HI" "$name" "$C_0"
+  while IFS= read -r line; do
+    [[ "$line" =~ ^([A-Za-z0-9]+)[[:space:]]*=[[:space:]]*\"#([0-9a-fA-F]{6})\" ]] || continue
+    k="${BASH_REMATCH[1]}"; v="${BASH_REMATCH[2]}"
+    r=$((16#${v:0:2})); g=$((16#${v:2:2})); b=$((16#${v:4:2}))
+    printf '  \e[48;2;%d;%d;%dm      \e[0m \e[38;2;%d;%d;%dm%-10s #%s  the quick brown fox\e[0m\n' "$r" "$g" "$b" "$r" "$g" "$b" "$k" "$v"
+  done < <(sed -n '/^\[roles\]/,/^\[/p' "$f")
+}
+
+# --- flip ----------------------------------------------------------------------------------
+osc_kitty() {
+  # OSC 10/11/12 and 4;n straight to the terminal: recolours the window dye runs in,
+  # over ssh too. Wrapped for tmux passthrough when inside tmux.
+  local conf="$1" fg bg cur line k v seq=""
+  fg="$(awk '$1=="foreground"{print $2}' "$conf")"
+  bg="$(awk '$1=="background"{print $2}' "$conf")"
+  cur="$(awk '$1=="cursor"{print $2}' "$conf")"
+  seq+=$'\e]10;'"$fg"$'\e\\'$'\e]11;'"$bg"$'\e\\'$'\e]12;'"$cur"$'\e\\'
+  while read -r k v; do
+    [[ "$k" =~ ^color([0-9]+)$ ]] || continue
+    seq+=$'\e]4;'"${BASH_REMATCH[1]};$v"$'\e\\'
+  done < <(awk '$1 ~ /^color[0-9]+$/{print $1, $2}' "$conf")
+  if [[ -n "${TMUX:-}" ]]; then
+    seq="${seq//$'\e'/$'\e\e'}"
+    seq=$'\ePtmux;'"$seq"$'\e\\'
+  fi
+  printf '%s' "$seq" > /dev/tty 2>/dev/null
+}
+
+# True when this desktop may be driven from elsewhere: this shell or a tmux client
+# came in over ssh, or a remote-desktop session is connected (NoMachine 4000, VNC,
+# RDP, RustDesk, AnyDesk, TeamViewer).
+remote_session() {
+  [[ -n "${SSH_CONNECTION:-}" ]] && return 0
+  local p
+  for p in $(tmux list-clients -F '#{client_pid}' 2>/dev/null); do
+    tr '\0' '\n' <"/proc/$p/environ" 2>/dev/null | grep -q '^SSH_CONNECTION=' && return 0
+  done
+  ss -Htn state established '( sport = :4000 or sport = :5900 or sport = :3389 or sport = :21118 or sport = :7070 or sport = :5938 )' 2>/dev/null | grep -q .
+}
+
+# awesome is back and final: rc.lua re-execs once more for its malloc fix, and only
+# the last instance runs without AWESOME_MALLOC_REEXEC.
+awesome_settled() {
+  echo 'return os.getenv("AWESOME_MALLOC_REEXEC") == nil' | timeout 2 awesome-client 2>/dev/null | grep -q 'boolean true'
+}
+
+# awesome restart re-reads theme.lua, whose overlay pulls in current/awesome.lua. It
+# re-execs in place, windows kept; the D-Bus "NoReply" it prints is normal. Each
+# instance paints theme.wallpaper over nitrogen's, so nitrogen goes last, spawned
+# through awesome for the session's DISPLAY. Never from afar: a re-exec hiccup has
+# to be fixable at the keyboard.
+awesome_reload() {
+  command -v awesome-client >/dev/null 2>&1 && pgrep -u "$UID" -x awesome >/dev/null 2>&1 || return 0
+  if remote_session; then
+    skip awesome "remote session; at the keyboard: echo 'awesome.restart()' | awesome-client"
+    return 0
+  fi
+  echo 'awesome.restart()' | timeout 5 awesome-client >/dev/null 2>&1
+  local i
+  for (( i = 0; i < 40; i++ )); do sleep 0.25; awesome_settled && break; done
+  if ! awesome_settled; then warn awesome "restarted but not answering after 10 s"; return 0; fi
+  ok awesome "restarted"
+  command -v nitrogen >/dev/null 2>&1 || return 0
+  sleep 1  # autostart's xrandr can repaint theme.wallpaper once more
+  echo 'require("awful").spawn("nitrogen --restore")' | timeout 2 awesome-client >/dev/null 2>&1 \
+    && ok nitrogen "wallpaper restored" || warn nitrogen "spawn through awesome failed"
+}
+
+# Obsidian: every vault Obsidian knows (its obsidian.json) gets fresh copies of the dye
+# themes it has installed, and a vault wearing a dye theme is switched to this one by
+# writing cssTheme to its appearance.json: Obsidian watches that file and swaps the
+# theme live. A vault on some other theme is left alone; picking a dye theme there
+# once opts it in. Prints "kind|label|message" rows for row(). With "check" as the
+# second argument it only compares the copies (for doctor) and writes nothing.
+obsidian_sync() {
+  python3 - "$HOME/.config/obsidian/obsidian.json" "$BUILD" "$1" "${2:-sync}" $(themes) <<'PY'
+import filecmp, json, shutil, sys
+from pathlib import Path
+
+cfg, build, name, mode, names = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5:]
+if not cfg.is_file():
+    print("skip|obsidian|no Obsidian config"); sys.exit()
+titles = {n: json.loads((build / n / "obsidian/manifest.json").read_text())["name"]
+          for n in names if (build / n / "obsidian/manifest.json").is_file()}
+switched, kept, copied = [], [], 0
+for v in json.loads(cfg.read_text()).get("vaults", {}).values():
+    dot = Path(v.get("path", "")) / ".obsidian"
+    if not dot.is_dir():
+        continue
+    app = dot / "appearance.json"
+    try:
+        data = json.loads(app.read_text()) if app.is_file() else {}
+    except ValueError:
+        print(f"warn|obsidian|{dot.parent.name}: appearance.json unreadable, left alone"); continue
+    wearing = data.get("cssTheme", "")
+    follows = wearing in titles.values()
+    if mode == "check":
+        stale = [f"{dot.parent.name}/{t}" for n, t in titles.items() if (dot / "themes" / t).is_dir()
+                 and not all((dot / "themes" / t / f).is_file() and filecmp.cmp(build / n / "obsidian" / f,
+                             dot / "themes" / t / f, shallow=False) for f in ("theme.css", "manifest.json"))]
+        print(f"warn|obsidian|stale: {', '.join(stale)} (next flip refreshes)" if stale
+              else f"ok|obsidian|{dot.parent.name}: copies current" + (f", wearing {wearing}" if follows else ""))
+        continue
+    # copies first, so the theme Obsidian is about to load is already current
+    for n, title in titles.items():
+        d = dot / "themes" / title
+        if not (follows or d.is_dir()):
+            continue
+        d.mkdir(parents=True, exist_ok=True)
+        for f in ("theme.css", "manifest.json"):
+            src, dst = build / n / "obsidian" / f, d / f
+            if not dst.is_file() or not filecmp.cmp(src, dst, shallow=False):
+                shutil.copyfile(src, dst); copied += 1
+    if follows:
+        if wearing != titles[name]:
+            data["cssTheme"] = titles[name]
+            app.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+        switched.append(dot.parent.name)
+    elif any((dot / "themes" / t).is_dir() for t in titles.values()):
+        kept.append(f"{dot.parent.name} ({wearing or 'default'})")
+if mode == "check":
+    sys.exit()
+if switched:
+    print(f"ok|obsidian|{', '.join(switched)} on {titles[name]}, live" + (f"; {copied} theme file(s) refreshed" if copied else ""))
+if kept:
+    print(f"skip|obsidian|{', '.join(kept)} not on a dye theme; pick one there once to follow")
+if not switched and not kept:
+    print("skip|obsidian|no vault has the dye themes")
+PY
+}
+
+# Spotify: dye owns its scheme's section of the spicetify theme's color.ini and
+# re-syncs it from build/ on every flip, then applies. apply restarts Spotify, so
+# only when it is running; otherwise the scheme waits for the next launch.
+spotify_flip() {
+  local name="$1" cfg theme ini
+  cfg="$(spicetify -c 2>/dev/null)"
+  [[ -r "$cfg" ]] || { warn spotify "no spicetify config"; return 0; }
+  theme="$(sed -n 's/^current_theme *= *//p' "$cfg" | tr -d '[:space:]')"
+  ini="$(dirname "$cfg")/Themes/$theme/color.ini"
+  [[ -n "$theme" && -f "$ini" ]] || { warn spotify "theme '$theme' has no color.ini"; return 0; }
+  python3 - "$ini" "$BUILD/$name/spicetify/color.ini" "$name" <<'PY' || { warn spotify "could not sync $ini"; return 0; }
+import re, sys
+from pathlib import Path
+ini, built, name = Path(sys.argv[1]), Path(sys.argv[2]).read_text(), sys.argv[3]
+section = built[built.index(f"[{name}]"):].rstrip() + "\n"
+old = ini.read_text()
+new, n = re.subn(rf"^\[{re.escape(name)}\]\n(?:(?!^\[).*\n?)*", section + "\n", old, flags=re.M)
+new = (new if n else old.rstrip() + "\n\n" + section).rstrip() + "\n"
+if new != old:
+    ini.write_text(new)
+PY
+  local apply=(spicetify -n apply) how="shows at next launch"
+  pgrep -x spotify >/dev/null 2>&1 && { apply=(spicetify apply); how="Spotify restarted"; }
+  if spicetify -n config color_scheme "$name" >/dev/null 2>&1 && "${apply[@]}" >/dev/null 2>&1; then ok spotify "applied; $how"
+  else warn spotify "spicetify apply failed; run it by hand to see why"; fi
+}
+
+cmd_flip() {
+  local name="$1"
+  have_theme "$name" || die "no such theme: $name (have: $(themes | tr '\n' ' '))"
+  mkdir -p "$CUR_DIR"
+  local tmp="$CUR_DIR/.current.$$"
+  ln -s "$BUILD/$name" "$tmp" && mv -T "$tmp" "$CUR" || die "could not re-point $CUR"
+  printf 'wearing %s%s%s\n' "$C_HI" "$name" "$C_0"
+
+  # Claude Code: the slug is fixed (custom:current); the file behind it changes.
+  [[ -d "$CLAUDE_THEMES" ]] || [[ "$CLAUDE_THEMES" != "$HOME/.claude/themes" ]] || mkdir -p "$CLAUDE_THEMES"
+  if [[ -d "$CLAUDE_THEMES" ]]; then
+    cp "$BUILD/$name/claude.json" "$CLAUDE_THEMES/.current.json.$$" && mv -f "$CLAUDE_THEMES/.current.json.$$" "$CLAUDE_THEMES/current.json" \
+      && ok claude "current.json written; a running session repaints via /theme" \
+      || fail claude "could not write $CLAUDE_THEMES/current.json"
+  else skip claude "$CLAUDE_THEMES missing"; fi
+
+  # gtk4: a plain file next to settings.ini (gitignored)
+  if [[ -d "$HOME/.config/gtk-4.0" ]]; then
+    cp "$BUILD/$name/gtk.css" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null && ok gtk "gtk.css copied (new apps)" || skip gtk "not writable"
+  else skip gtk "no ~/.config/gtk-4.0"; fi
+
+  # tmux
+  if tmux info >/dev/null 2>&1; then
+    tmux source-file "$HOME/.tmux.conf" >/dev/null 2>&1 && tmux refresh-client -S 2>/dev/null && ok tmux "reloaded" || fail tmux "source-file failed"
+  else skip tmux "no server"; fi
+
+  # nvim, every live instance with a server socket (stale sockets are removed)
+  local n=0 dead=0 s pid
+  for s in "${XDG_RUNTIME_DIR:-/run/user/$UID}"/nvim.*.0; do
+    [[ -S "$s" ]] || continue
+    pid="${s##*/nvim.}"; pid="${pid%%.*}"
+    if [[ "$(cat "/proc/$pid/comm" 2>/dev/null)" != nvim ]]; then rm -f "$s"; dead=$((dead+1)); continue; fi
+    if timeout 3 nvim --server "$s" --remote-expr "execute('colorscheme $name')" >/dev/null 2>&1; then n=$((n+1)); else warn nvim "pid $pid did not answer"; fi
+  done
+  (( n > 0 )) && ok nvim "$n instance(s) switched" || skip nvim "no live instance"
+  (( dead > 0 )) && skip nvim "$dead stale socket(s) removed"
+
+  # kitty: every instance listening on /tmp/kitty-<pid> (kitty.conf listen_on), else OSC to this window
+  local ks=0 sock
+  if command -v kitty >/dev/null 2>&1; then
+    for sock in /tmp/kitty-*; do
+      [[ -S "$sock" ]] || continue
+      kitty @ --to "unix:$sock" set-colors --all --configured "$BUILD/$name/kitty.conf" >/dev/null 2>&1 && ks=$((ks+1)) || rm -f "$sock" 2>/dev/null
+    done
+  fi
+  if (( ks > 0 )); then ok kitty "$ks instance(s) via remote control"
+  elif [[ -t 1 ]]; then osc_kitty "$BUILD/$name/kitty.conf"; ok terminal "this window via OSC (no kitty socket here)"
+  else skip kitty "not a terminal"; fi
+
+  # zsh: every tmux pane sitting at a zsh prompt. On a fleet box that is `arm -a`
+  # (it also re-arms the fleet functions); elsewhere dye does the same send-keys.
+  if tmux info >/dev/null 2>&1; then
+    local line="source ~/.config/theme/current/shell.zsh" verb="re-sourced"
+    (( RESTART )) && { line="nocorrect exec zsh"; verb="restarted"; }
+    if command -v arm >/dev/null 2>&1; then
+      if (( RESTART )); then arm -a -x >/dev/null 2>&1 && ok zsh "arm -a -x restarted live shells" || warn zsh "arm -a -x failed; exec zsh by hand"
+      else arm -a >/dev/null 2>&1 && ok zsh "arm -a re-sourced live shells" || warn zsh "arm -a failed; new prompts pick it up"; fi
+    else
+      local pane cmd mode z=0
+      while read -r pane cmd mode; do
+        [[ "$cmd" == zsh && "$mode" == 0 ]] || continue
+        tmux send-keys -t "$pane" -l "$line" 2>/dev/null && tmux send-keys -t "$pane" Enter 2>/dev/null && z=$((z+1))
+      done < <(tmux list-panes -a -F '#{pane_id} #{pane_current_command} #{pane_in_mode}' 2>/dev/null)
+      (( z > 0 )) && ok zsh "$z pane(s) $verb through tmux" || skip zsh "no zsh pane at a prompt"
+    fi
+  else skip zsh "no tmux; next prompt picks it up"; fi
+
+  # bat: theme must be in the cache
+  local bb; bb="$(bat_bin)"
+  if [[ -n "$bb" ]]; then
+    "$bb" --list-themes 2>/dev/null | grep -qx "$name" && ok bat "theme cached" || { "$bb" cache --build >/dev/null 2>&1 && ok bat "cache rebuilt" || warn bat "cache build failed"; }
+  fi
+
+  # desktop hooks, each only when the tool exists
+  command -v polybar-msg >/dev/null 2>&1 && pgrep -x polybar >/dev/null 2>&1 && { polybar-msg cmd restart >/dev/null 2>&1 && ok polybar "restarted" || warn polybar "restart failed"; }
+  command -v spicetify >/dev/null 2>&1 && spotify_flip "$name"
+  awesome_reload
+  skip "firefox" "load $BUILD/$name/firefox/manifest.json as a temporary add-on"
+  local kind label msg
+  while IFS='|' read -r kind label msg; do "$kind" "$label" "$msg"; done < <(obsidian_sync "$name")
+  # Slack's theme editor (2023 on) has four colours; slack.txt keeps the legacy 8-slot
+  # string, whose slots 1, 3, 7 and 8 are those four.
+  local sn _ ss sp sb; IFS=, read -r sn _ ss _ _ _ sp sb <"$BUILD/$name/slack.txt"
+  skip "slack" "Preferences > Appearance > Custom theme: navigation $sn, selected $ss, presence $sp, notifications $sb"
+  return 0
+}
+
+# --- doctor --------------------------------------------------------------------------------
+cmd_doctor() {
+  local name; name="$(current_name)"
+  echo "link"
+  if [[ -L "$CUR" && -n "$name" && "$(basename "$(readlink -f "$CUR")")" == "$name" ]]; then ok current "$name"; else fail current "link missing or name mismatch"; fi
+  echo "wiring"
+  wired_report
+  echo "render"
+  # --check exits 1 on drift, but a crash (e.g. no tomllib/tomli) exits 1 too:
+  # tell them apart, or a broken render.py reads as "drifted".
+  local rout rrc
+  rout="$(python3 "$THEME_DIR/render.py" --check 2>&1)"; rrc=$?
+  if (( rrc == 0 )); then ok render "build/ current"
+  elif grep -q '^Traceback' <<<"$rout"; then fail render "render.py crashed: $(tail -n1 <<<"$rout")"
+  else fail render "build/ drifted: dye render"; fi
+  echo "repos"
+  local t repo
+  for t in $(themes); do
+    repo="$SRC/$t.nvim/main"
+    if [[ ! -d "$repo/.git" ]]; then warn "$t" "no checkout at $repo"; continue; fi
+    if [[ -n "$(git -C "$repo" status --porcelain 2>/dev/null)" ]]; then fail "$t" "checkout dirty"; fi
+    local d=""
+    for sub in colors lua extras; do
+      diff -rq "$BUILD/$t/nvim/$sub" "$repo/$sub" >/dev/null 2>&1 || d="$d $sub"
+    done
+    [[ -z "$d" ]] && ok "$t" "checkout == build" || fail "$t" "checkout differs from build:$d (dye publish $t)"
+    [[ -n "$(git -C "$repo" log --branches --not --remotes 2>/dev/null)" ]] && warn "$t" "unpushed commits"
+  done
+  echo "generated copies (render --install)"
+  for t in $(themes); do
+    local g=""
+    cmp -s "$BUILD/$t/syntax.tmTheme" "$DOTFILES/bat/themes/$t.tmTheme" || g="$g bat"
+    cmp -s "$BUILD/$t/syntax.tmTheme" "$DOTFILES/tuicr/themes/$t-syntax.tmTheme" || g="$g tuicr-syntax"
+    cmp -s "$BUILD/$t/tuicr.toml" "$DOTFILES/tuicr/themes/$t.toml" || g="$g tuicr"
+    cmp -s "$BUILD/$t/claude.json" "$CLAUDE_THEMES/$t.json" || g="$g claude"
+    [[ -z "$g" ]] && ok "$t" "bat, tuicr, claude copies current" || fail "$t" "stale copies:$g (dye render --install)"
+  done
+  echo "installed copies (a flip refreshes these)"
+  local kind label msg
+  while IFS='|' read -r kind label msg; do [[ "$kind" == warn ]] && kind=fail; "$kind" "$label" "$msg"; done < <(obsidian_sync "$(current_name)" check)
+  if command -v spicetify >/dev/null 2>&1; then
+    local scfg sini t; scfg="$(spicetify -c 2>/dev/null)"
+    sini="$(dirname "$scfg")/Themes/$(sed -n 's/^current_theme *= *//p' "$scfg" | tr -d '[:space:]')/color.ini"
+    for t in $(themes); do
+      if python3 -c 'import re,sys; s=open(sys.argv[1]).read(); b=open(sys.argv[2]).read(); n=sys.argv[3]
+m=re.search(r"^\["+re.escape(n)+r"\]\n(?:(?!^\[).*\n?)*", s, re.M)
+sys.exit(0 if m and m.group(0).strip()==b[b.index("["+n+"]"):].strip() else 1)' "$sini" "$BUILD/$t/spicetify/color.ini" "$t" 2>/dev/null
+      then ok spotify "$t section current"; else fail spotify "$t section stale in color.ini (dye $t syncs it)"; fi
+    done
+  fi
+  echo "hex outside theme/"
+  local allow="$THEME_DIR/doctor.allow" hits
+  hits="$(cd "$DOTFILES" && git ls-files -z 2>/dev/null | xargs -0 grep -noIE '#[0-9a-fA-F]{6}\b' 2>/dev/null | grep -vE '^(theme|\.claude|tests|bat/themes|tuicr/themes)/' || true)"
+  if [[ -s "$allow" ]]; then
+    while IFS= read -r pat; do
+      [[ -z "$pat" || "$pat" == \#* ]] && continue
+      hits="$(printf '%s\n' "$hits" | grep -vE "^${pat%%:*}" || true)"
+    done < "$allow"
+  fi
+  if [[ -z "${hits// }" ]]; then ok hex "none"; else
+    printf '%s\n' "$hits" | sed 's/^/    /'
+    fail hex "$(printf '%s\n' "$hits" | grep -c .) line(s) carry hex values outside theme/"
+  fi
+  echo
+  if (( FINDINGS == 0 )); then printf '%sdoctor: clean%s\n' "$C_OK" "$C_0"; return 0; fi
+  printf '%sdoctor: %d finding(s)%s\n' "$C_ERR" "$FINDINGS" "$C_0"; return 1
+}
+
+# --- render / publish / install ------------------------------------------------------------
+# Hand render.py the Claude themes dir dye resolved above. Its own default is the
+# dotclaude tree, so on a box without dotclaude `--install` would mkdir
+# ~/dotclaude/.claude/themes -- which then flips dye's own detection (above).
+cmd_render() { THEME_CLAUDE_DIR="$CLAUDE_THEMES" python3 "$THEME_DIR/render.py" "$@"; }
+
+cmd_publish() {
+  local push=0 names=()
+  for a in "$@"; do case "$a" in --push) push=1;; *) names+=("$a");; esac; done
+  (( ${#names[@]} )) || mapfile -t names < <(themes)
+  local sha; sha="$(git -C "$DOTFILES" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  local t repo
+  for t in "${names[@]}"; do
+    have_theme "$t" || die "no such theme: $t"
+    repo="$SRC/$t.nvim/main"
+    [[ -d "$repo/.git" ]] || die "$repo is not a git checkout (clone lanteignel93/$t.nvim there first)"
+    if [[ -n "$(git -C "$repo" status --porcelain -- . ':!colors' ':!lua' ':!extras' 2>/dev/null)" ]]; then
+      die "$repo has changes outside colors/ lua/ extras/; commit them first"
+    fi
+    for sub in colors lua extras; do
+      rsync -a --delete "$BUILD/$t/nvim/$sub/" "$repo/$sub/"
+    done
+    git -C "$repo" add -A colors lua extras
+    if git -C "$repo" diff --cached --quiet; then ok "$t" "nothing to publish"; continue; fi
+    git -C "$repo" commit -q -m "render: palettes/$t.toml @ dotfiles $sha" && ok "$t" "committed"
+    (( push )) && { git -C "$repo" push -q origin HEAD && ok "$t" "pushed" || fail "$t" "push failed"; }
+  done
+  (( FINDINGS == 0 ))
+}
+
+cmd_install() {
+  mkdir -p "$CUR_DIR" "$HOME/.local/bin"
+  [[ -e "$CUR" ]] || { ln -s "$BUILD/voidrunner" "$CUR" && ok current "-> voidrunner"; }
+  [[ -e "$HOME/.config/bat" ]] || { ln -s "$DOTFILES/bat" "$HOME/.config/bat" && ok bat "~/.config/bat -> dotfiles/bat"; }
+  [[ -e "$HOME/.local/bin/dye" ]] || { ln -s "$THEME_DIR/dye" "$HOME/.local/bin/dye" && ok dye "~/.local/bin/dye"; }
+  local bb; bb="$(bat_bin)"
+  [[ -n "$bb" ]] && { "$bb" cache --build >/dev/null 2>&1 && ok bat "cache built" || warn bat "cache build failed"; }
+  if [[ ! -f "$CLAUDE_THEMES/current.json" ]]; then
+    mkdir -p "$CLAUDE_THEMES" && cp "$CUR/claude.json" "$CLAUDE_THEMES/current.json" && ok claude "current.json seeded in $CLAUDE_THEMES"
+  fi
+  cmd_status
+  return 0
+}
+
+# --- main ----------------------------------------------------------------------------------
+RESTART=0; ARGS=()
+for a in "$@"; do case "$a" in --restart|-x) RESTART=1 ;; *) ARGS+=("$a") ;; esac; done
+set -- "${ARGS[@]}"
+case "${1:-}" in
+  "")                 cmd_status ;;
+  ls|list)            cmd_ls ;;
+  swatch)             shift; cmd_swatch "$@" ;;
+  doctor)             cmd_doctor ;;
+  render)             shift; cmd_render "$@" ;;
+  publish)            shift; cmd_publish "$@" ;;
+  install)            cmd_install ;;
+  -h|--help|help)     sed -n '2,20p' "$0" ;;
+  *)                  cmd_flip "$1" ;;
+esac

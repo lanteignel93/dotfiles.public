@@ -14,8 +14,6 @@ return {
     'nvim-lua/plenary.nvim',
   },
   config = function()
-    -- Use a dedicated highlight group for the border for better theme control
-    vim.api.nvim_set_hl(0, 'LazyGitBorder', { fg = '#585858' }) -- Muted gray from your darkvoid theme
 
     require('lazygit').setup({
       -- Use the modern setup function instead of vim.g variables
@@ -30,8 +28,6 @@ return {
     -- A cleaner way to set up the keybinding
     --
     local function open_lazygit_transparent()
-      -- Set the background highlight to NONE just before opening
-      vim.api.nvim_set_hl(0, 'LazyGitFloat', { bg = 'NONE' })
       -- Open LazyGit
       print("Attempting to open LazyGit...") -- Add this line for verification
       require('lazygit').open()

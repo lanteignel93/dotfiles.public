@@ -1,0 +1,9 @@
+# paths (prefix match) whose hex values `dye doctor` may ignore, each with an "until"
+# Desktop-only surfaces wired in the desktop session; drop the line when its include lands.
+polybar/: until polybar/colors.ini is the include line (desktop step)
+awesome/themes/: the Gruvbox base under the bundle overlay; retire when the desktop pass replaces it
+gtk-4.0/: dock.theme is Gruvbox RGBA; no palette consumer yet
+nitrogen/: bgcolor, one value; set from the bundle in the desktop step
+alacritty/themes/: the vendored pool, deleted in the wiring step
+awesome/collision/: vendored module, fallback colours only
+.tmux/plugins/: vendored tpm plugins (their READMEs), not our configuration

@@ -23,7 +23,6 @@ export ZSH="$HOME/.oh-my-zsh"
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 # ZSH_THEME="powerlevel10k/powerlevel10k"
 # ZSH_THEME="gruvbox"
-SOLARIZED_THEME="dark"
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
 # a theme from this variable instead of looking in $ZSH/themes/
@@ -153,6 +152,12 @@ alias zshconfig="nvim ~/.zshrc"
 alias ohmyzsh="nvim ~/.oh-my-zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# Theme bundle: prompt colours, fzf, eza, bat, lazygit, tuicr, syntax highlighting.
+# Rendered by ~/dotfiles/theme; `dye <name>` flips it and `arm -a` re-sources it.
+if [[ -r ~/.config/theme/current/shell.zsh ]]; then source ~/.config/theme/current/shell.zsh
+elif [[ -r ~/dotfiles/theme/build/voidrunner/shell.zsh ]]; then source ~/dotfiles/theme/build/voidrunner/shell.zsh  # install.sh not run yet
+fi
+zstyle ':fzf-tab:*' use-fzf-default-opts yes
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 fpath+=${ZDOTDIR:-~}/.zsh_functions
 
@@ -186,7 +191,6 @@ source ~/powerlevel10k/powerlevel10k.zsh-theme
 
 alias f="xdg-open ."
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-NVIM_THEME="darkvoid"
 alias leet="nvim leetcode.nvim"
 alias countlnpy='find -type f -name "*.py" | xargs wc -l'
 alias mute='amixer -D pulse sset Master mute'
@@ -257,7 +261,6 @@ notify_phone() {
   return 0 # Return success
 }
 export PYTHONBREAKPOINT="ipdb.set_trace"
-source "$HOME/.p10k.zsh"
 #
 # Start and manage ssh-agent automatically
 #
@@ -332,8 +335,9 @@ function y() {
 # CLAUDE_CODE_TMUX_TRUECOLOR because Claude Code hard-clamps colour to level 2
 # (256) whenever $TMUX is set — it detects truecolor from COLORTERM first, then
 # throws it away, and the clamp runs after FORCE_COLOR so that can't beat it.
-# At 256 the darkvoid diff tints (#223b2b add / #3b2427 remove) both round to
-# xterm colour 236 (#303030), making additions and deletions identical grey.
+# At 256 the theme's diff tints (the add and remove backgrounds, a few steps
+# above the panel) both round to the same xterm grey, making additions and
+# deletions identical.
 # This var is the only documented opt-out.
 # Gate on $TMUX, NOT $COLORTERM: inside our tmux truecolor is always real because
 # .tmux.conf declares Tc for these terminals. $COLORTERM is set by the emulator

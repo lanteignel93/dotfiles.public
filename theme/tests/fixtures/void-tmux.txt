@@ -1,0 +1,11 @@
+darkvoid_bg='#1c1c1c'
+darkvoid_fg='#c0c0c0'
+darkvoid_lime='#bdfe58'
+darkvoid_neon='#1bfd9c'        # search/selection accent — used for active tab + active pane border
+darkvoid_sea_green='#5EEEAF'
+darkvoid_lavender='#E5CCFF'
+darkvoid_red='#dea6a0'
+darkvoid_comment='#585858'
+darkvoid_dark_gray='#303030'
+darkvoid_subtle='#222222'      # darker than dark_gray, just above bar bg — for very-faint caps
+darkvoid_type='#a1a1a1'        # mid-light grey for readable-but-dim inactive text

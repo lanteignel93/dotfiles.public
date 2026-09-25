@@ -1,0 +1,8 @@
+  local darkvoid_fg='#c0c0c0'
+  local darkvoid_lime='#bdfe58'
+  local darkvoid_sea_green='#5EEEAF'
+  local darkvoid_lavender='#E5CCFF'
+  local darkvoid_light_blue='#99CCFF'
+  local darkvoid_red='#dea6a0'
+  local darkvoid_darkred='#FD2222'
+  local darkvoid_comment='#585858'

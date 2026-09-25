@@ -3,53 +3,10 @@ return {
   'nvim-lualine/lualine.nvim',
   dependencies = { 'nvim-tree/nvim-web-devicons' },
   config = function()
-    -- 1. DEFINE YOUR DARKVOID THEME COLORS
-    local colors = {
-      fg = '#c0c0c0', -- main foreground
-      bg = '#1c1c1c', -- main background
-      lime = '#bdfe58', -- for normal mode (from your 'kw' color)
-      sea_green = '#5EEEAF', -- for command mode (from your 'func' color)
-      lavender = '#E5CCFF', -- for visual mode (from your 'string' color)
-      light_blue = '#99CCFF', -- for insert mode (from your 'type' color)
-      red = '#dea6a0', -- for replace mode (from your 'error' color)
-      info_blue = '#7fa1c3', -- for terminal mode (from your 'info' color)
-      dark_gray = '#303030', -- for section 'b' background (from your 'visual' color)
-      mid_gray = '#404040', -- for section 'c' background (from your 'line_nr' color)
-      light_gray = '#585858', -- for inactive text (from your 'comment' color)
-    }
-
-    -- 2. CREATE THE LUALINE THEME TABLE
-    local darkvoid_theme = {
-      normal = {
-        a = { fg = colors.bg, bg = colors.lime, gui = 'bold' },
-        b = { fg = colors.fg, bg = colors.dark_gray },
-        c = { fg = colors.fg, bg = colors.mid_gray },
-      },
-      insert = { a = { fg = colors.bg, bg = colors.light_blue, gui = 'bold' } },
-      visual = { a = { fg = colors.bg, bg = colors.lavender, gui = 'bold' } },
-      command = { a = { fg = colors.bg, bg = colors.sea_green, gui = 'bold' } },
-      replace = { a = { fg = colors.bg, bg = colors.red, gui = 'bold' } },
-      terminal = { a = { fg = colors.bg, bg = colors.info_blue, gui = 'bold' } },
-      inactive = {
-        a = { fg = colors.light_gray, bg = colors.bg, gui = 'bold' },
-        b = { fg = colors.light_gray, bg = colors.bg },
-        c = { fg = colors.light_gray, bg = colors.dark_gray },
-      },
-    }
-
-    -- 3. ADD YOUR NEW THEME TO THE LIST OF AVAILABLE THEMES
-    local themes = {
-      -- your original themes
-      onedark = 'onedark', -- Kept for reference, but can be removed
-      nord = 'nord',
-      gruvbox = 'gruvbox',
-      catppuccin = 'catppuccin',
-      -- Your new theme!
-      darkvoid = darkvoid_theme,
-    }
-
-    -- Set 'darkvoid' as the default if NVIM_THEME is not set
-    local env_var_nvim_theme = os.getenv 'NVIM_THEME' or 'darkvoid'
+    -- Colours come from the active theme: it ships lua/lualine/themes/<name>.lua
+    -- (picked up by theme = 'auto') and exposes its palette for the tab pin.
+    local ok, theme = pcall(require, vim.g.colors_name or 'voidrunner')
+    local p = (ok and theme.palette) and theme.palette() or { bg1 = 'NONE', lime = 'NONE' }
 
     -- (Your other lualine component settings remain the same)
     local mode = {
@@ -89,7 +46,7 @@ return {
     require('lualine').setup {
       options = {
         icons_enabled = true,
-        theme = themes[env_var_nvim_theme], -- This will now correctly load your darkvoid theme
+        theme = 'auto',
         section_separators = { left = '', right = '' },
         component_separators = { left = '', right = '' },
         disabled_filetypes = { statusline = { 'alpha', 'neo-tree' } },
@@ -114,7 +71,7 @@ return {
             -- Pinned: the default inherits mode-section colors, which a
             -- :colorscheme switch (highlight clear) can knock off lime.
             buffers_color = {
-              active = { fg = colors.bg, bg = colors.lime, gui = 'bold' },
+              active = { fg = p.bg1, bg = p.lime, gui = 'bold' },
             },
           },
         },

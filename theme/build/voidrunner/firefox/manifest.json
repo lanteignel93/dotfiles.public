@@ -1,0 +1,53 @@
+{
+  "manifest_version": 2,
+  "name": "Voidrunner",
+  "version": "1.0",
+  "description": "Near-black ground, pale accents; structure carried by lightness, hue only a whisper.",
+  "author": "Laurent Lanteigne",
+  "browser_specific_settings": { "gecko": { "id": "voidrunner-theme@lanteignel93" } },
+  "theme": {
+    "colors": {
+      "frame": "#0d0d0d",
+      "frame_inactive": "#0d0d0d",
+      "tab_background_text": "#9e9e9e",
+      "tab_selected": "#1c1c1c",
+      "tab_text": "#f1f1f1",
+      "tab_line": "#bdfe58",
+      "tab_loading": "#5eeeaf",
+      "toolbar": "#1c1c1c",
+      "toolbar_text": "#c0c0c0",
+      "bookmark_text": "#c0c0c0",
+      "toolbar_field": "#262626",
+      "toolbar_field_text": "#f1f1f1",
+      "toolbar_field_border": "#585858",
+      "toolbar_field_focus": "#262626",
+      "toolbar_field_text_focus": "#f1f1f1",
+      "toolbar_field_border_focus": "#bdfe58",
+      "toolbar_field_highlight": "#303030",
+      "toolbar_field_highlight_text": "#f1f1f1",
+      "toolbar_top_separator": "#0d0d0d",
+      "toolbar_bottom_separator": "#585858",
+      "toolbar_vertical_separator": "#585858",
+      "icons": "#9e9e9e",
+      "icons_attention": "#bdfe58",
+      "button_background_hover": "#303030",
+      "button_background_active": "#3c3c3c",
+      "popup": "#1c1c1c",
+      "popup_text": "#c0c0c0",
+      "popup_border": "#585858",
+      "popup_highlight": "#303030",
+      "popup_highlight_text": "#f1f1f1",
+      "sidebar": "#1c1c1c",
+      "sidebar_text": "#c0c0c0",
+      "sidebar_border": "#585858",
+      "sidebar_highlight": "#303030",
+      "sidebar_highlight_text": "#f1f1f1",
+      "ntp_background": "#0d0d0d",
+      "ntp_text": "#c0c0c0"
+    },
+    "properties": {
+      "color_scheme": "dark",
+      "content_color_scheme": "dark"
+    }
+  }
+}

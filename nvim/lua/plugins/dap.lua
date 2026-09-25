@@ -12,8 +12,6 @@ return {
       local dap_view = require("dap-view")
 
       -- 1) SIGNS & HIGHLIGHTS
-      vim.api.nvim_set_hl(0, "DapBreakpoint", { fg = "#fa1100" })
-      vim.api.nvim_set_hl(0, "DapStopped", { fg = "#bdfe58" })
       vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DapBreakpoint" })
       vim.fn.sign_define("DapStopped", { text = "→", texthl = "DapStopped", linehl = "CursorLine" })
 

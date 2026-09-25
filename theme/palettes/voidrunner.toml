@@ -1,0 +1,72 @@
+# voidrunner — the Void palette. Roles, not colours, are the API.
+# Source of truth for every rendered surface (see ../render.py). Edit here only.
+
+[meta]
+name        = "voidrunner"
+title       = "Voidrunner"
+variant     = "dark"
+repo        = "lanteignel93/voidrunner.nvim"
+description = "Near-black ground, pale accents; structure carried by lightness, hue only a whisper."
+credit      = "aliqyan-21/darkvoid.nvim (MIT): the greys, lime, mint and lavender descend from it."
+ansi_green  = "lime"        # role that feeds ANSI 2/10
+
+[roles]
+# grounds
+bg0      = "#0d0d0d"   # terminal ground, kitty background, nvim ground while transparent
+bg1      = "#1c1c1c"   # panel, Pmenu, lualine, floats, color0
+bg2      = "#262626"   # cursor line, message backgrounds
+bg3      = "#303030"   # visual, selection
+bg4      = "#3c3c3c"   # end of buffer, hover
+lnr      = "#404040"   # line numbers, indent guides
+# text
+dim      = "#585858"   # comment, structure, A_DIM
+border   = "#585858"   # float border, Telescope, LazyGit
+fg2      = "#9e9e9e"   # secondary text, C++ scope noise
+fg       = "#c0c0c0"   # foreground, A_FG
+bright   = "#f1f1f1"   # bracket, kitty foreground
+ident    = "#f1f1f1"   # identifier
+# accents
+lime     = "#bdfe58"   # hero: keyword, title, NORMAL, your work, A_LIME
+limeDeep = "#4b8902"   # preprocessor, bash border
+limeSoft = "#bedc74"   # LSP hint
+cursor   = "#bdfe58"
+search   = "#5eeeaf"   # hlsearch (open decision: butter would separate it from functions)
+func     = "#5eeeaf"   # function, method (bold)
+op       = "#5eeeaf"   # operator
+mint     = "#5eeeaf"   # arrival: COMMAND, success, A_SEA
+mintVivid = "#1bfd9c"  # Pmenu selection, fast mode
+mintPale = "#baffc9"   # git added
+str      = "#e5ccff"   # string
+lav      = "#e5ccff"   # elsewhere: VISUAL, remote, forge, A_LAV
+sky      = "#99ccff"   # type, bool, INSERT, permission
+steel    = "#7fa1c3"   # LSP info, TERMINAL, IDE, color6
+teal     = "#b2d8d8"   # constant, number, plan mode
+rose     = "#dea6a0"   # LSP error, REPLACE, A_ERR
+pink     = "#ffb3ba"   # git removed
+butter   = "#ffffba"   # warning, git changed, A_WARN
+lspWarn  = "#ffffba"   # LSP warning (was #d6efd8, repaired 2026-09-22)
+peach    = "#ffd9ba"   # orange (subagents)
+red      = "#fa1100"   # ANSI red, color1 (open decision: ember #ff6b45)
+
+[derived]
+# Claude Code keys that have a formula (render.py); a key here overrides it.
+# Void keeps its hand-tuned values so the render is byte-identical to the old
+# darkvoid.json.
+inactiveShimmer         = "#6e6e6e"
+suggestion              = "#6e6e6e"
+promptBorderShimmer     = "#6e6e6e"
+permissionShimmer       = "#c2e0ff"
+warningShimmer          = "#ffffd9"
+memoryBackgroundColor   = "#302a3a"
+diffAdded               = "#223b2b"
+diffRemoved             = "#3b2427"
+diffAddedDimmed         = "#1a2b20"
+diffRemovedDimmed       = "#2b1c1e"
+diffAddedWord           = "#35573c"
+diffRemovedWord         = "#57383c"
+pink_FOR_SUBAGENTS_ONLY = "#ffc9e3"
+
+[floors]
+# contrast vs bg1 allowed below the class default; recorded facts, each with a reason
+border   = { ratio = 2.3, why = "same grey as comments by design; a float border is a hairline" }
+red      = { ratio = 4.1, why = "ANSI red only; #fa1100 measures 4.18, ember #ff6b45 would be 6.04" }

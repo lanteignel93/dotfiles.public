@@ -34,53 +34,14 @@ return {
     statuscolumn = { enabled = true },
     words = { enabled = true },
 
-    ---------------------------------------------------
-    -- THEME CONFIGURATION FOR DARKVOID
-    ---------------------------------------------------
+    -- Colours come from the active colorscheme (Snacks* highlight groups);
+    -- only shapes are set here.
     styles = {
-      -- Use your theme's dark background for picker and input popups
-      picker = {
-        win = {
-          winhl = "Normal:Normal,FloatBorder:FloatBorder,NormalNC:NormalNC",
-          border = "rounded",
-        },
-      },
-      input = {
-        win = {
-          winhl = "Normal:Normal,FloatBorder:FloatBorder",
-        },
-      },
-      -- Style notifications to match your theme
-      notification = {
-        -- wo = { wrap = true }, -- You can uncomment this if you like
-        border = "rounded",
-        title = {
-          fg = "#bdfe58", -- Lime green accent for titles
-          bg = "bg",
-        },
-      },
-      -- General UI elements
-      border = {
-        style = "rounded",
-        fg = "#585858", -- Muted gray for borders (from your comment color)
-      },
-      title = {
-        fg = "#bdfe58", -- Lime green accent for titles
-        bg = "bg",
-      },
-      -- Make the selected item in pickers use your theme's accent color
-      selected = {
-        fg = "#bdfe58", -- Lime green accent
-      },
-      -- Indent line and scope styling
-      indent = {
-        char = "│",
-        fg = "#404040", -- Subtle gray for indent lines (from your line_nr color)
-      },
-      scope = {
-        fg = "#404040",
-      },
+      picker = { win = { winhl = "Normal:Normal,FloatBorder:FloatBorder,NormalNC:NormalNC", border = "rounded" } },
+      input = { win = { winhl = "Normal:Normal,FloatBorder:FloatBorder" } },
+      notification = { border = "rounded" },
     },
+    indent = { char = "│" },
   },
   keys = {
     -- Top Pickers & Explorer

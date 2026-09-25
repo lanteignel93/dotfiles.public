@@ -1,0 +1,57 @@
+# spacecowboy — the desert palette (born Sotol, 2026-09-23). Two hue families:
+# cactus green for keywords, arrival and your work; dust orange for functions,
+# the cursor, the selection, constants at its pale end and errors at its dark
+# end. Everything else is the desert floor: sand and bone.
+
+[meta]
+name        = "spacecowboy"
+title       = "Spacecowboy"
+variant     = "dark"
+repo        = "lanteignel93/spacecowboy.nvim"
+description = "Umber ground, sand text, two hue families: cactus green and dust orange. Everything else tonal."
+credit      = ""
+ansi_green  = "mint"        # the hero is a green too, but sage is the calmer terminal green
+
+[roles]
+# grounds
+bg0      = "#130e0a"
+bg1      = "#201812"
+bg2      = "#2a2019"
+bg3      = "#362a20"
+bg4      = "#43352a"
+lnr      = "#4f4034"
+# text
+dim      = "#7a6852"   # dust brown
+border   = "#8a6a52"   # leather
+fg2      = "#a99a85"
+fg       = "#d3c6b0"   # sand
+bright   = "#f3e9d6"   # bone
+ident    = "#d3c6b0"   # sand
+# accents
+lime     = "#a8d88a"   # saguaro
+limeDeep = "#6f8f3a"
+limeSoft = "#c4dca8"
+cursor   = "#e59a5b"   # dust
+search   = "#f0c090"   # light dust
+func     = "#e59a5b"   # dust
+op       = "#d3c6b0"   # sand
+mint     = "#b7d9a0"   # sage
+mintVivid = "#e59a5b"  # dust
+mintPale = "#b7d9a0"   # sage
+str      = "#bfb29c"   # sand, dim
+lav      = "#d3c6b0"   # sand
+sky      = "#f3e9d6"   # bone (types step above identifiers)
+steel    = "#a99a85"   # sand, dim
+teal     = "#e6b98c"   # pale dust
+rose     = "#e07a5f"   # terracotta
+pink     = "#f0a58a"
+butter   = "#f0c090"   # light dust
+lspWarn  = "#f0c090"
+peach    = "#f0b48a"
+red      = "#e0623f"
+
+[derived]
+# none: every Claude Code key comes from the formula
+
+[floors]
+# none: the desert palette clears every class default

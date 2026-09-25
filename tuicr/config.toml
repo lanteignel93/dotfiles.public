@@ -1,1 +1,2 @@
-theme = "darkvoid"
+# default when `tuicr` is run without --theme; the shell alias from the theme bundle passes the current one
+theme = "voidrunner"

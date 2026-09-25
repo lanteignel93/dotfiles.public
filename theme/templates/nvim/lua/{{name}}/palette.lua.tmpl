@@ -1,0 +1,55 @@
+-- {{name}} palette: generated from palettes/{{name}}.toml. Do not edit here;
+-- edit the palette and re-render. Roles, not colours, are the API.
+return {
+  -- grounds
+  bg0 = "{{bg0}}",      -- terminal ground; the editor ground while transparent
+  bg1 = "{{bg1}}",      -- panel, Pmenu, statusline, floats
+  bg2 = "{{bg2}}",      -- cursor line, message backgrounds
+  bg3 = "{{bg3}}",      -- visual, selection
+  bg4 = "{{bg4}}",      -- end of buffer, hover
+  lnr = "{{lnr}}",      -- line numbers, indent guides
+  -- text
+  dim = "{{dim}}",      -- comments, structure
+  border = "{{border}}",
+  fg2 = "{{fg2}}",      -- secondary text, punctuation, scope noise
+  fg = "{{fg}}",
+  bright = "{{bright}}",
+  ident = "{{ident}}",
+  -- accents
+  lime = "{{lime}}",        -- hero: keywords, titles, your work
+  limeDeep = "{{limeDeep}}", -- preprocessor
+  limeSoft = "{{limeSoft}}", -- hints
+  cursor = "{{cursor}}",
+  search = "{{search}}",
+  func = "{{func}}",
+  op = "{{op}}",
+  mint = "{{mint}}",        -- arrival: success, command
+  mintVivid = "{{mintVivid}}", -- selection in menus
+  mintPale = "{{mintPale}}",   -- git added
+  str = "{{str}}",
+  lav = "{{lav}}",          -- elsewhere: visual, remote
+  sky = "{{sky}}",          -- types, booleans, insert
+  steel = "{{steel}}",      -- info, terminal
+  teal = "{{teal}}",        -- constants, numbers
+  rose = "{{rose}}",        -- errors, replace
+  pink = "{{pink}}",        -- git removed
+  butter = "{{butter}}",    -- warnings, git changed
+  lspWarn = "{{lspWarn}}",
+  peach = "{{peach}}",      -- orange
+  red = "{{red}}",          -- ANSI red
+  -- derived (diff backgrounds and tints)
+  diffAdded = "{{diffAdded}}",
+  diffRemoved = "{{diffRemoved}}",
+  diffAddedDimmed = "{{diffAddedDimmed}}",
+  diffRemovedDimmed = "{{diffRemovedDimmed}}",
+  diffAddedWord = "{{diffAddedWord}}",
+  diffRemovedWord = "{{diffRemovedWord}}",
+  memory = "{{memoryBackgroundColor}}",
+  -- ANSI green (the hero when it is green, else the palette's calmer green)
+  green = "{{green}}",
+  none = "NONE",
+  terminal = {
+    "{{bg1}}", "{{red}}", "{{green}}", "{{butter}}", "{{mint}}", "{{lav}}", "{{steel}}", "#ffffff",
+    "{{dim}}", "{{red}}", "{{green}}", "{{butter}}", "{{mint}}", "{{lav}}", "{{steel}}", "#ffffff",
+  },
+}

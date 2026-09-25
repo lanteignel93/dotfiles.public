@@ -19,7 +19,6 @@ vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
 	{ import = 'plugins.theme' },         -- Colorscheme configuration
-	{ import = 'plugins.themes' },        -- Installed-but-inactive theme pool (previewable via :Telescope colorscheme)
 	{ import = 'plugins.lualine' },       -- The status line bar at the bottom of the window
 	{ import = 'plugins.misc' },          -- Collection of small, uncategorized utilities
 	{ import = 'plugins.gitsigns' },      -- Git indicators (added/modified lines) in the sidebar gutter
@@ -47,6 +46,12 @@ require('lazy').setup({
 	{ import = 'plugins.jupyter' },       -- Jupyter notebooks: jupytext + molten (+ inline plots where the terminal allows)
 }, {
 	rocks = { enabled = false },
+	-- lanteignel93/*.nvim specs carry dev = true: use ~/src/<repo>/main when it
+	-- exists (this is where `dye publish` writes), else fetch from GitHub.
+	dev = {
+		path = function(plugin) return vim.fn.expand('~/src/' .. plugin.name .. '/main') end,
+		fallback = true,
+	},
 	ui = {
 		-- If you have a Nerd Font, set icons to an empty table which will use the
 		-- default lazy.nvim defined Nerd Font icons otherwise define a unicode icons table
