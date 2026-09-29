@@ -152,6 +152,9 @@ alias zshconfig="nvim ~/.zshrc"
 alias ohmyzsh="nvim ~/.oh-my-zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# fzf: prefer the git-installed one in ~/.fzf (0.55) over the distro's (Ubuntu 22.04
+# ships 0.29, too old for the theme's fzf colours); ~/.fzf.zsh only appends it.
+[[ -x ~/.fzf/bin/fzf ]] && path=(~/.fzf/bin ${path:#$HOME/.fzf/bin})
 # Theme bundle: prompt colours, fzf, eza, bat, lazygit, tuicr, syntax highlighting.
 # Rendered by ~/dotfiles/theme; `dye <name>` flips it and `arm -a` re-sources it.
 if [[ -r ~/.config/theme/current/shell.zsh ]]; then source ~/.config/theme/current/shell.zsh

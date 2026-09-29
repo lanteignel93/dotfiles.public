@@ -2,9 +2,9 @@
 # dye — wear one theme everywhere.
 #
 #   dye                    which theme this box wears, and which surfaces are wired
-#   dye <name> [--restart] flip: re-point ~/.config/theme/current, refresh Claude's
+#   dye <name>             flip: re-point ~/.config/theme/current, refresh Claude's
 #                          current.json, then tell every live surface to reload;
-#                          --restart execs every shell at a prompt instead of re-sourcing
+#                          --restart (-x) execs every shell at a prompt instead
 #   dye ls                 the themes build/ offers
 #   dye swatch [name]      the 34 roles of a theme (default: the worn one), in colour
 #   dye doctor             drift and wiring: stray hex in dotfiles, missing include
@@ -450,6 +450,21 @@ cmd_install() {
   return 0
 }
 
+# --- fleet identity ------------------------------------------------------------------------
+# dye lives in the dots, not the fleet's bin, and joins the fleet the way any
+# tool does: the marker on its last line and an answer to __id. sc finds it
+# through ~/.local/bin (SC_BIN_EXTRA). No kit sourced: dye stays runnable
+# on a box that has only this file, so the record is printed by hand.
+SC_TOOL='dye'
+SC_TAGLINE='wear one theme everywhere'
+SC_MOTTO='one palette, rendered, worn'
+SC_SIGIL=$' ◆─ \n─◆─◆\n ─◆ '
+sc_id() {
+  local -a s=(); local line
+  while IFS= read -r line; do s+=("$line"); done <<<"$SC_SIGIL"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$SC_TOOL" "$SC_TAGLINE" "$SC_MOTTO" "${s[0]}" "${s[1]}" "${s[2]}"
+}
+
 # --- main ----------------------------------------------------------------------------------
 RESTART=0; ARGS=()
 for a in "$@"; do case "$a" in --restart|-x) RESTART=1 ;; *) ARGS+=("$a") ;; esac; done
@@ -463,5 +478,8 @@ case "${1:-}" in
   publish)            shift; cmd_publish "$@" ;;
   install)            cmd_install ;;
   -h|--help|help)     sed -n '2,20p' "$0" ;;
+  __id)               sc_id ;;
   *)                  cmd_flip "$1" ;;
 esac
+
+# sc-fleet — membership marker read by `sc`; identity is set above main.
