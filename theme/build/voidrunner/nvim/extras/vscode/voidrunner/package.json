@@ -1,0 +1,26 @@
+{
+  "name": "voidrunner-theme",
+  "displayName": "Voidrunner",
+  "description": "Near-black ground, pale accents; structure carried by lightness, hue only a whisper.",
+  "version": "1.0.0",
+  "publisher": "lanteignel93",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lanteignel93/voidrunner.nvim"
+  },
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": ["Themes"],
+  "keywords": ["theme", "dark", "voidrunner", "neovim"],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Voidrunner",
+        "uiTheme": "vs-dark",
+        "path": "./themes/voidrunner-color-theme.json"
+      }
+    ]
+  }
+}

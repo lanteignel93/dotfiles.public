@@ -1,0 +1,26 @@
+{
+  "name": "{{name}}-theme",
+  "displayName": "{{title}}",
+  "description": "{{description}}",
+  "version": "1.0.0",
+  "publisher": "lanteignel93",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/{{repo}}"
+  },
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": ["Themes"],
+  "keywords": ["theme", "dark", "{{name}}", "neovim"],
+  "contributes": {
+    "themes": [
+      {
+        "label": "{{title}}",
+        "uiTheme": "vs-dark",
+        "path": "./themes/{{name}}-color-theme.json"
+      }
+    ]
+  }
+}

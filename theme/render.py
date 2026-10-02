@@ -95,6 +95,10 @@ EXTRAS = [
     ("firefox/manifest.json", "firefox/{name}/manifest.json"),
     ("slack.txt", "slack/{name}.txt"),
     ("spicetify/color.ini", "spicetify/{name}/color.ini"),
+    ("vscode/package.json", "vscode/{name}/package.json"),
+    ("vscode/themes/{name}-color-theme.json", "vscode/{name}/themes/{name}-color-theme.json"),
+    ("vscode/README.md", "vscode/{name}/README.md"),
+    ("vscode/LICENSE", "vscode/{name}/LICENSE"),
 ]
 
 # --- colour math (ported from the 2026-09-23 artifact; JS Math.round semantics) -----------
@@ -328,7 +332,7 @@ def render_one(pal: Palette, out_root: Path) -> Path:
     (out / "claude.json").write_text(pal.claude_json(), encoding="utf-8")
     extras = out / "nvim" / "extras"
     for bundle_rel, extra_rel in EXTRAS:
-        srcf = out / bundle_rel
+        srcf = out / bundle_rel.format(name=pal.name)
         if not srcf.exists():
             continue
         dstf = extras / extra_rel.format(name=pal.name)
