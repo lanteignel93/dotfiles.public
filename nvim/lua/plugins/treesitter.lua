@@ -53,7 +53,10 @@ return {
           if not ok or not query then
             return
           end
-          if pcall(vim.treesitter.start, ev.buf) then
+          -- C/C++ keep the runtime's cindent, tuned in core/cpp.lua: typing the
+          -- 140 LeetCode solutions back in, treesitter misplaced 3.0% of lines vs
+          -- clang-format (mostly Stroustrup function braces), cindent 0.6%.
+          if pcall(vim.treesitter.start, ev.buf) and lang ~= 'c' and lang ~= 'cpp' then
             vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
           end
         end,

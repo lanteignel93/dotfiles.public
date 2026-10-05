@@ -48,3 +48,17 @@ vim.api.nvim_create_autocmd('BufNewFile', {
         vim.api.nvim_win_set_cursor(0, { 3, 0 })
     end,
 })
+
+-- ── 3. Indent-as-you-type matches the house .clang-format ───────────────────
+-- cindent (on via the runtime's indent/cpp.vim; treesitter indent is skipped
+-- for C/C++ in plugins/treesitter.lua), tuned to dotclaude's clang-format:
+-- case flush with switch (:0, l1), access specifiers flush with class (g0),
+-- no namespace/extern indent (N-s, E-s), return type unindented (t0),
+-- continuation aligned to the open paren ((0, Ws), lambdas/braced init (j1, J1).
+-- Only leading whitespace: braces, spacing and wrapping are still <leader>f.
+vim.api.nvim_create_autocmd('FileType', {
+    pattern = { 'c', 'cpp' },
+    callback = function(ev)
+        vim.bo[ev.buf].cinoptions = ':0,l1,g0,N-s,E-s,t0,(0,Ws,j1,J1'
+    end,
+})
