@@ -347,17 +347,27 @@ function y() {
 # (kitty) and stripped by the ssh hop to a remote box, so gating on it left the
 # clamp ON over ssh (COLORTERM empty) even though tmux+Tc renders 24-bit fine —
 # which is what flattened the diff tints to grey on the servers.
+# A bare `claude` used to open with a greeting prompt that sent every session
+# hunting for a quote that lives in personal notes (removed 2026-10-06); the
+# SessionStart hook already shows the commands list.
 claude() {
     if [[ -n "$TMUX" ]]; then local -x CLAUDE_CODE_TMUX_TRUECOLOR=1; fi
-    if [[ $# -eq 0 ]]; then
-        command claude "Display my session greeting: today's quote and available skills"
-    else
-        command claude "$@"
-    fi
+    command claude "$@"
 }
 export PATH="$HOME/.local/bin:$PATH"
 # Secrets live outside the repo — never commit keys here
 [[ -f "$HOME/.zsh_secrets" ]] && source "$HOME/.zsh_secrets"
 # Machine-local config (aliases, env) — not tracked in the repo
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+
+# Claude Code's tool shell inherits this file through its snapshot. There, zsh's
+# nomatch and `=` expansion turn ordinary commands into errors (`--include=*.md`
+# with no match, `echo ====`), and cat->bat / grep overrides change output that
+# tools parse: 182 such errors in 30 days of transcripts (2026-10-06 review).
+if [[ -n "$CLAUDECODE" ]]; then
+    setopt NO_NOMATCH NO_EQUALS
+    unalias cat 2>/dev/null
+    unfunction grep 2>/dev/null; unalias grep 2>/dev/null
+fi
 
