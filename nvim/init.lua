@@ -2,6 +2,7 @@ require 'core.keymaps'  -- Load general keymaps
 require 'core.options'  -- Load general options
 require 'core.snippets' -- Custom code snippets
 require 'core.cpp'      -- C/C++ buffer helpers (header switch, #pragma once skeleton)
+require 'core.autoreload' -- Reload files changed on disk by other processes, even in an unfocused pane
 
 -- 1. SET UP LAZY.NVIM
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
