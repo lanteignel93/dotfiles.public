@@ -45,9 +45,19 @@ return {
     -- so that file is kept a link to dotclaude's copy. Only a link is ever replaced,
     -- never a real file. The dir's .clangd is hand-made (it pre-includes the
     -- prelude header) and is left alone.
+    -- Indent as you type: vim-sleuth guesses shiftwidth from each file, and the
+    -- older solutions predate the house style (2-space), so <CR>/<Tab> indented by
+    -- 2 and kept it even after <leader>f. The dir's .editorconfig declares 4, which
+    -- sleuth (and nvim's own editorconfig) take over the guess. Written once if
+    -- missing, never overwritten.
     config = function(_, opts)
         require("leetcode").setup(opts)
         local home = vim.fn.stdpath("data") .. "/leetcode"
+        local editorconfig = home .. "/.editorconfig"
+        if not vim.uv.fs_lstat(editorconfig) then
+            vim.fn.mkdir(home, "p")
+            vim.fn.writefile({ "root = true", "", "[*]", "indent_style = space", "indent_size = 4" }, editorconfig)
+        end
         for _, dir in ipairs({ vim.env.DOTCLAUDE_DIR or "", "~/dotclaude", "~/git_projects/dotclaude" }) do
             local style = vim.fn.expand(dir .. "/dev-tool-box/cpp/clang-format")
             if dir ~= "" and vim.uv.fs_stat(style) then
